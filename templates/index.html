@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Audios y Documentos</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <style>
+
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-header {
+      background-color: #0d6efd;
+      color: white;
+      font-weight: bold;
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+    }
+
+    .btn {
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+    }
+
+    .badge {
+      font-size: 0.9rem;
+    }
+
+    .input-group-text {
+      background-color: #fff;
+      border-right: none;
+    }
+
+    .form-control {
+      border-left: none;
+    }
+
+    header {
+      background-color: #ffffff;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+      .reproductor {
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-height 0.5s ease, opacity 0.5s ease;
+        transform: translateY(-10px);
+      }
+
+      .reproductor.mostrar {
+        max-height: 120px;
+        opacity: 1;
+        transform: translateY(0);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .reproductor.oculto {
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      .icono {
+        display: inline-block;
+        transition: transform 0.3s ease;
+      }
+
+      .icono.girar {
+        transform: rotate(90deg);
+      }
+
+      .btn.rebote {
+        animation: rebote 0.4s ease;
+      }
+
+      @keyframes rebote {
+        0%   { transform: scale(1); }
+        40%  { transform: scale(1.1); }
+        60%  { transform: scale(0.95); }
+        100% { transform: scale(1); }
+      }
+      .btn.mostrar {
+        background-color: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+      }
+
+    </style>
+
+    #Modo oscuro
+    <style>
+      body.dark-mode {
+        background-color: #121212;
+        color: #f1f1f1;
+      }
+
+      .card.dark-mode {
+        background-color: #1e1e1e;
+        color: #f1f1f1;
+      }
+
+      .card-header.dark-mode {
+        background-color: #343a40;
+        color: #ffffff;
+      }
+
+      .btn-toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 999;
+      }
+    </style>
+
+
+</head>
+<body>
+
+  <button class="btn btn-outline-dark btn-sm btn-toggle" onclick="toggleDarkMode()">🌓 Modo oscuro</button>
+
+  <br><br>
+      <header class="text-center py-4 bg-light border-bottom mb-4">
+        <h1 class="display-5 fw-bold">🎧 Alcance Guatemala</h1>
+        <p class="lead text-muted">Audios, secuencias y PDFs disponibles</p>
+      </header>
+
+      <div class="container">
+        <div class="input-group mb-4">
+          <span class="input-group-text">🔍</span>
+          <input type="text" id="buscador" class="form-control" placeholder="Buscar por título...">
+      </div>
+
+
+
+     {% for fecha, archivos in agrupados.items() %}
+      {% for archivo in archivos %}
+        <div class="card mb-4">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>{{ archivo.titulo }}</span>
+            <span class="badge bg-light text-dark">{{ fecha.strftime('%d %B %Y') }}</span>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              {% if archivo.imagen_path %}
+              <div class="col-md-4">
+                <img src="{{ archivo.imagen_path }}" class="img-fluid rounded" style="max-height: 200px; object-fit: cover;">
+              </div>
+              {% endif %}
+              <div class="col-md-8">
+                <audio controls class="w-100 mb-3" id="audio-{{ archivo.id }}">
+                  <source src="{{ archivo.mp3_path }}" type="audio/mpeg">
+                </audio>
+
+                
+
+                <div class="d-flex gap-2 flex-wrap mb-3">
+                  <button class="btn btn-outline-secondary btn-sm" onclick="verPDF('{{ archivo.pdf_path | replace('\\', '/') }}')">📄 Ver PDF</button>
+                  
+                  <!--<p>Ruta PDF: {{ archivo.pdf_path }}</p> -->
+                  
+                  <button class="btn btn-outline-success btn-sm" onclick="cambiarTono('{{ archivo.id }}', 2)">🔼 Subir tono</button>
+                  <button class="btn btn-outline-danger btn-sm" onclick="cambiarTono('{{ archivo.id }}', -2)">🔽 Bajar tono</button>
+                  
+                </div>
+
+             
+
+                <div class="d-flex gap-2 flex-wrap">
+                  {% if archivo.tono %}<span class="badge bg-primary">🎵 Tono: {{ archivo.tono }}</span>{% endif %}
+                  {% if archivo.bpm %}<span class="badge bg-success">🕒 BPM: {{ archivo.bpm }}</span>{% endif %}
+                  {% if archivo.compas %}<span class="badge bg-warning text-dark">📐 Compás: {{ archivo.compas }}</span>{% endif %}
+                  {% if archivo.duracion %}<span class="badge bg-info text-dark">⏱️ Duración: {{ archivo.duracion }}</span>{% endif %}
+                  <span class="badge bg-info">Tono actual: {{ tono_actual }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% endfor %}
+  </div>
+
+ 
+  <script>
+    function cambiarTono(id, semitonos) {
+      const audio = document.getElementById('audio-' + id);
+      const source = audio.querySelector('source');
+      const nuevaRuta = `/cambiar_tono/${id}/${semitonos}?t=${Date.now()}`;
+
+      // ✅ Detener el audio actual
+      audio.pause();
+      audio.currentTime = 0;
+
+      // ✅ Reemplazar la fuente
+      source.src = nuevaRuta;
+      audio.load();
+
+      // ✅ Reproducir cuando esté listo
+      audio.oncanplaythrough = function () {
+        audio.play().catch(err => {
+          console.log("Error al reproducir:", err);
+        });
+      };
+    }
+  </script>
+
+
+    <script>
+          function toggleReproductor(id) {
+            const reproductor = document.getElementById('reproductor-' + id);
+            const boton = document.getElementById('btn-' + id);
+            const texto = boton.querySelector('.texto');
+            const icono = boton.querySelector('.icono');
+            const audio = document.getElementById('audio-' + id);
+            const estaVisible = reproductor.classList.contains('mostrar');
+
+            // Ocultar todos los reproductores
+            document.querySelectorAll('.reproductor').forEach(div => {
+              div.classList.remove('mostrar');
+              div.classList.add('oculto');
+            });
+
+            document.querySelectorAll('[id^="btn-"]').forEach(btn => {
+              btn.classList.remove('mostrar', 'rebote');
+              btn.classList.add('oculto');
+              const txt = btn.querySelector('.texto');
+              const ico = btn.querySelector('.icono');
+              if (txt) txt.innerText = 'Escuchar';
+              if (ico) ico.classList.remove('girar');
+              if (ico) ico.innerText = '▶';
+            });
+
+            document.querySelectorAll('[id^="audio-"]').forEach(aud => {
+              aud.pause();
+              aud.currentTime = 0;
+            });
+
+            // Mostrar solo si estaba oculto
+            if (!estaVisible) {
+              reproductor.classList.remove('oculto');
+              reproductor.classList.add('mostrar');
+              boton.classList.remove('oculto');
+              boton.classList.add('mostrar', 'rebote');
+              texto.innerText = 'Ocultar';
+              icono.innerText = '⏸';
+              icono.classList.add('girar');
+            }
+          }
+    </script>
+
+    <!--Darkmode -->
+    <script>
+        function toggleDarkMode() {
+          document.body.classList.toggle('dark-mode');
+          document.querySelectorAll('.card').forEach(el => el.classList.toggle('dark-mode'));
+          document.querySelectorAll('.card-header').forEach(el => el.classList.toggle('dark-mode'));
+        }
+    </script>
+
+    <!--pdf ventana-->
+    <script>
+      function verPDF(ruta) {
+        document.getElementById('pdfFrame').src = ruta;
+        const modal = new bootstrap.Modal(document.getElementById('pdfModal'));
+        modal.show();
+      }
+    </script>
+
+    
+
+
+
+
+      <!--Vista previa del pdf en modal-->
+    <div class="modal fade" id="pdfModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Vista previa PDF</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <iframe id="pdfFrame" src="" width="100%" height="600px" style="border:none;"></iframe>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="spinner" class="position-fixed top-50 start-50 translate-middle d-none">
+        <div class="spinner-border text-primary" role="status"></div>
+      </div>
+      
+      <!--animacion carga de pitch-->
+      <div id="spinner" class="position-fixed top-50 start-50 translate-middle d-none">
+        <div class="spinner-border text-primary" role="status"></div>
+      </div>
+
+
+
+
+
+        
+
+
+
+</body>
+</html>

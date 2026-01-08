@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel de administración</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+    .fade-in {
+        opacity: 0;
+        animation: fadeIn 0.8s forwards;
+    }
+
+    .fade-out {
+        animation: fadeOut 1s forwards;
+    }
+
+    @keyframes fadeIn {
+        to { opacity: 1; }
+    }
+
+    @keyframes fadeOut {
+        to { opacity: 0; }
+    }
+    </style>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+    .fade-in {
+        opacity: 0;
+        animation: fadeIn 0.8s forwards;
+    }
+    .fade-out {
+        animation: fadeOut 1s forwards;
+    }
+    @keyframes fadeIn {
+        to { opacity: 1; }
+    }
+    @keyframes fadeOut {
+        to { opacity: 0; }
+    }
+    </style>
+</head>
+
+<body>
+    {% if mensaje %}
+        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+            <div id="toast-mensaje" class="toast align-items-center border-0 show fade-in 
+                {% if tipo_mensaje == 'success' %}text-bg-success{% elif tipo_mensaje == 'error' %}text-bg-danger{% endif %}" 
+                role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                {{ mensaje }}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            </div>
+        </div>
+        <script>
+            setTimeout(function() {
+            const toast = document.getElementById('toast-mensaje');
+            if (toast) {
+                toast.classList.remove('fade-in');
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 1000);
+            }
+            }, 4000);
+        </script>
+    {% endif %}
+
+   
+
+
+    <p><a href="{{ url_for('logout') }}">Cerrar sesión</a></p>
+
+  <h1>📤 Subir nuevo audio y PDF</h1>
+  {% if mensaje %}
+    <p id="mensaje-exito" style="color:green; font-weight:bold">{{ mensaje }}</p>
+    <script>
+        setTimeout(function() {
+        const mensaje = document.getElementById('mensaje-exito');
+        if (mensaje) {
+            mensaje.style.display = 'none';
+        }
+        }, 4000); // 4000 milisegundos = 4 segundos
+    </script>
+
+   {% endif %}
+<form method="POST" action="{{ url_for('admin') }}" enctype="multipart/form-data">
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Subir nuevo audio y PDF</h5>
+
+      <!-- Todos los campos aquí -->
+
+      <div class="mb-2">
+        <label for="titulo" class="form-label">Título</label>
+        <input type="text" class="form-control form-control-sm" id="titulo" name="titulo">
+      </div>
+
+      <div class="mb-2">
+        <label for="mp3" class="form-label">Archivo MP3</label>
+        <input type="file" class="form-control form-control-sm" id="mp3" name="mp3" accept=".mp3">
+      </div>
+
+      <div class="mb-2">
+        <label for="pdf" class="form-label">Archivo PDF</label>
+        <input type="file" class="form-control form-control-sm" id="pdf" name="pdf" accept=".pdf">
+      </div>
+
+      <div class="mb-2">
+        <label for="tono" class="form-label">Tono</label>
+        <select class="form-select form-select-sm" id="tono" name="tono">
+          <option value="">Selecciona el tono</option>
+          <option>Do</option>
+          <option>Do#/Reb</option>
+          <option>Re</option>
+          <option>Re#/Mib</option>
+          <option>Mi</option>
+          <option>Fa</option>
+          <option>Fa#/Solb</option>
+          <option>Sol</option>
+          <option>Sol#/Lab</option>
+          <option>La</option>
+          <option>La#/Sib</option>
+          <option>Si</option>
+        </select>
+      </div>
+
+      <div class="mb-2">
+        <label for="bpm" class="form-label">BPM</label>
+        <input type="text" class="form-control form-control-sm" id="bpm" name="bpm">
+      </div>
+
+      <div class="mb-2">
+        <label for="compas" class="form-label">Compás</label>
+        <input type="text" class="form-control form-control-sm" id="compas" name="compas">
+      </div>
+
+      <div class="mb-2">
+        <label for="imagen" class="form-label">Imagen</label>
+        <input type="file" class="form-control form-control-sm" id="imagen" name="imagen" accept="image/*">
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-sm mt-2">Subir</button>
+    </div>
+  </div>
+</form>
+
+
+
+<script>
+  document.getElementById('buscador').addEventListener('input', function() {
+    const filtro = this.value.toLowerCase();
+    const items = document.querySelectorAll('.archivo-item');
+
+    items.forEach(item => {
+      const titulo = item.querySelector('.accordion-button').textContent.toLowerCase();
+      item.style.display = titulo.includes(filtro) ? '' : 'none';
+    });
+  });
+</script>
+
+<br><br><br><br><br>
+ <h2>📁 Archivos subidos</h2>
+    <input type="text" id="buscador" class="form-control mb-3" placeholder="🔍 Buscar por título...">
+    <div class="accordion" id="lista-archivos">
+  {% for archivo in archivos %}
+    <div class="accordion-item archivo-item">
+        <h2 class="accordion-header" id="heading{{ archivo.id }}">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ archivo.id }}" aria-expanded="false" aria-controls="collapse{{ archivo.id }}">
+            {{ archivo.titulo }}
+            </button>
+        </h2>
+                        
+        <div id="collapse{{ archivo.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ archivo.id }}" data-bs-parent="#lista-archivos">
+            <div class="accordion-body">
+            <audio controls src="{{ archivo.mp3_path }}" class="w-100"></audio><br>
+            <a href="{{ archivo.pdf_path }}" target="_blank">📄 Ver PDF</a><br><br>
+           
+
+
+
+            <p><strong>BPM:</strong> {{ archivo.bpm }}</p>
+            <p><strong>Compás:</strong> {{ archivo.compas }}</p>
+            <p><strong>Duración:</strong> {{ archivo.duracion }}</p>
+            {% if archivo.imagen_path %}
+            <img src="{{ archivo.imagen_path }}" alt="Imagen" style="max-width: 100%; height: auto;">
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('eliminar', archivo_id=archivo.id) }}">
+                <button type="submit" class="btn btn-danger btn-sm">🗑️ Eliminar</button>
+            </form>
+            </div>
+            
+        </div>
+    </div>
+    {% endfor %}
+    </div>
+
+</body>
+</html>
